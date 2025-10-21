@@ -12,7 +12,7 @@ import (
 var frontendFS embed.FS
 
 func frontendHandler() http.Handler {
-	// Получаем вложенную файловую систему
+
 	fsys, err := fs.Sub(frontendFS, "frontend/dist")
 	if err != nil {
 		log.Fatal(err)
