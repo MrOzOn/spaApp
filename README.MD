@@ -7,6 +7,10 @@ This is example app - single page application with go backend implementation.
 
 **Backend**
 - Go 1.25 (no need any dependencies)
+```shell
+ go get -u github.com/gin-gonic/gin
+ go get -u github.com/gin-contrib/cors
+```
 
 ## IMPORTANT
 !!! Before build native executing app you need build production bundle for javascript !!!
