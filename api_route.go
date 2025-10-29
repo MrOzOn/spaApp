@@ -1,9 +1,7 @@
 package main
 
 import (
-	"log"
-	"net/http"
-	"time"
+	"spaApp/handlers"
 
 	"github.com/gin-gonic/gin"
 )
@@ -11,10 +9,6 @@ import (
 func ApiRoutes(r *gin.Engine) {
 	api := r.Group("/api")
 	{
-		api.GET("/time", func(c *gin.Context) {
-			currentTime := time.Now()
-			log.Printf("current time is %s", currentTime)
-			c.JSON(http.StatusCreated, APIResponse{Data: currentTime})
-		})
+		api.GET("/time", handlers.GetCurrentTime)
 	}
 }
