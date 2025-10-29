@@ -1,50 +1,18 @@
 package main
 
 import (
-	"embed"
+	"cmp"
 	"log"
-	"net/http"
 	"os"
-	"strings"
 	"time"
 
 	"github.com/gin-contrib/cors"
-	"github.com/gin-contrib/static"
 	"github.com/gin-gonic/gin"
 )
-
-//go:embed frontend/dist
-var frontendFS embed.FS
 
 type APIResponse struct {
 	Data  interface{} `json:"data,omitempty"`
 	Error string      `json:"error,omitempty"`
-}
-
-func getFileSystem(path string) static.ServeFileSystem {
-	fs, err := static.EmbedFolder(frontendFS, path)
-	if err != nil {
-		log.Fatal(err)
-	}
-	return fs
-}
-
-func Serve(app *gin.Engine) {
-	distFS := getFileSystem("frontend/dist")
-	app.Use(static.Serve("/", distFS))
-
-	app.NoRoute(func(c *gin.Context) {
-		// Only serve index.html for non-API routes
-		if !strings.HasPrefix(c.Request.RequestURI, "/api") {
-			index, err := distFS.Open("index.html")
-			if err != nil {
-				log.Fatal(err)
-			}
-			defer index.Close()
-			stat, _ := index.Stat()
-			http.ServeContent(c.Writer, c.Request, "index.html", stat.ModTime(), index)
-		}
-	})
 }
 
 func main() {
@@ -60,25 +28,14 @@ func main() {
 		MaxAge:           12 * time.Hour,
 	}))
 
-	// ===== API =====
-	api := r.Group("/api")
-	{
-		api.GET("/time", func(c *gin.Context) {
-			currentTime := time.Now()
-			log.Printf("current time is %s", currentTime)
-			c.JSON(http.StatusCreated, APIResponse{Data: currentTime})
-		})
-	}
+	ServeReact(r)
+	ApiRoutes(r)
 
-	Serve(r)
-
-	// ===== Запуск =====
-	port := os.Getenv("PORT")
-	if port == "" {
-		port = "8080"
-	}
-	log.Printf("Server starting http://localhost:%s", port)
-	if err := r.Run(":" + port); err != nil {
+	// ===== RUN SERVER =====
+	port := cmp.Or(os.Getenv("PORT"), "8080")
+	ip := cmp.Or(os.Getenv("IP"), "localhost")
+	log.Printf("Server starting http://%s:%s", ip, port)
+	if err := r.Run(ip + ":" + port); err != nil {
 		log.Fatal(err)
 	}
 }
