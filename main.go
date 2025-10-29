@@ -2,25 +2,49 @@ package main
 
 import (
 	"embed"
-	"io/fs"
 	"log"
-	"mime"
 	"net/http"
 	"os"
-	"path"
 	"strings"
 	"time"
 
 	"github.com/gin-contrib/cors"
+	"github.com/gin-contrib/static"
 	"github.com/gin-gonic/gin"
 )
 
-//go:embed frontend/dist/*
+//go:embed frontend/dist
 var frontendFS embed.FS
 
 type APIResponse struct {
 	Data  interface{} `json:"data,omitempty"`
 	Error string      `json:"error,omitempty"`
+}
+
+func getFileSystem(path string) static.ServeFileSystem {
+	fs, err := static.EmbedFolder(frontendFS, path)
+	if err != nil {
+		log.Fatal(err)
+	}
+	return fs
+}
+
+func Serve(app *gin.Engine) {
+	distFS := getFileSystem("frontend/dist")
+	app.Use(static.Serve("/", distFS))
+
+	app.NoRoute(func(c *gin.Context) {
+		// Only serve index.html for non-API routes
+		if !strings.HasPrefix(c.Request.RequestURI, "/api") {
+			index, err := distFS.Open("index.html")
+			if err != nil {
+				log.Fatal(err)
+			}
+			defer index.Close()
+			stat, _ := index.Stat()
+			http.ServeContent(c.Writer, c.Request, "index.html", stat.ModTime(), index)
+		}
+	})
 }
 
 func main() {
@@ -46,38 +70,7 @@ func main() {
 		})
 	}
 
-	// ===== React build FS =====
-	reactDist, err := fs.Sub(frontendFS, "frontend/dist")
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	// ===== NoRoute для SPA и статики =====
-	r.NoRoute(func(c *gin.Context) {
-		reqPath := c.Request.URL.Path
-		if strings.Contains(reqPath, "..") {
-			c.Status(http.StatusBadRequest)
-			return
-		}
-
-		// Убираем ведущий слэш
-		filePath := strings.TrimPrefix(reqPath, "/")
-		if filePath != "" {
-			// Проверяем наличие файла в embed
-			f, err := reactDist.Open(filePath)
-			if err == nil {
-				f.Close()
-				// Определяем MIME
-				c.Writer.Header().Set("Content-Type", mime.TypeByExtension(path.Ext(filePath)))
-				c.FileFromFS(filePath, http.FS(reactDist))
-				return
-			}
-		}
-
-		// Если файл не найден — отдаём SPA index.html
-		c.Writer.Header().Set("Content-Type", "text/html; charset=utf-8")
-		c.FileFromFS("index.html", http.FS(reactDist))
-	})
+	Serve(r)
 
 	// ===== Запуск =====
 	port := os.Getenv("PORT")
