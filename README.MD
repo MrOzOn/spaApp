@@ -11,6 +11,10 @@ This is example app - single page application with go backend implementation.
  go get -u github.com/gin-gonic/gin
  go get -u github.com/gin-contrib/cors
  go get github.com/gin-contrib/static
+ 
+ go get -u github.com/swaggo/gin-swagger
+go get -u github.com/swaggo/files
+go install github.com/swaggo/swag/cmd/swag@latest
 ```
 
 ## IMPORTANT
@@ -53,4 +57,9 @@ GOOS=windows GOARCH=amd64 go build -o spa_web.exe
 7. for release version should run 
 ```shell
 GIN_MODE=release ./spa_web
+```
+
+8. generate swagger docs
+```shell
+swag init -g main.go
 ```

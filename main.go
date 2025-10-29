@@ -6,8 +6,12 @@ import (
 	"os"
 	"time"
 
+	_ "spaApp/docs"
+
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
 func main() {
@@ -25,6 +29,9 @@ func main() {
 
 	ServeReact(r)
 	ApiRoutes(r)
+
+	// Swagger документация
+	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 	// ===== RUN SERVER =====
 	port := cmp.Or(os.Getenv("PORT"), "8080")
