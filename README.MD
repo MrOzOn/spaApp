@@ -63,3 +63,6 @@ GIN_MODE=release ./spa_web
 ```shell
 swag init -g main.go
 ```
+
+9. show swagger
+`http://localhost:8080/swagger/index.html`
