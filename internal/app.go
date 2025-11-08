@@ -28,19 +28,22 @@ func NewApp(frontendFS embed.FS) (*App, error) {
 		AllowCredentials: true,
 		MaxAge:           12 * time.Hour,
 	}))
-
-	ServeReact(a.r, frontendFS)
-	ApiRoutes(a.r)
-
-	// Swagger документация
+	// ===== REACT STATIC =====
+	err := a.ServeReact(frontendFS)
+	if err != nil {
+		return nil, err
+	}
+	// ===== API =====
+	a.ApiRoutes()
+	// SWAGGER DOCS ROUTE
 	a.r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 	return a, nil
 }
 
-func (a *App) Start(port, ip string) error {
+func (app *App) Start(port, ip string) error {
 	log.Printf("Server starting http://%s:%s", ip, port)
-	if err := a.r.Run(ip + ":" + port); err != nil {
+	if err := app.r.Run(ip + ":" + port); err != nil {
 		return err
 	}
 	return nil

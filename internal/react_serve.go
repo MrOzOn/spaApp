@@ -10,19 +10,19 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func getFileSystem(path string, frontendFS embed.FS) static.ServeFileSystem {
+func getFileSystem(path string, frontendFS embed.FS) (static.ServeFileSystem, error) {
 	fs, err := static.EmbedFolder(frontendFS, path)
-	if err != nil {
-		log.Fatal(err)
-	}
-	return fs
+	return fs, err
 }
 
-func ServeReact(app *gin.Engine, frontendFS embed.FS) {
-	distFS := getFileSystem("frontend/dist", frontendFS)
-	app.Use(static.Serve("/", distFS))
+func (app *App) ServeReact(frontendFS embed.FS) error {
+	distFS, err := getFileSystem("frontend/dist", frontendFS)
+	if err != nil {
+		return err
+	}
+	app.r.Use(static.Serve("/", distFS))
 
-	app.NoRoute(func(c *gin.Context) {
+	app.r.NoRoute(func(c *gin.Context) {
 		// Only serve index.html for non-API routes
 		if !strings.HasPrefix(c.Request.RequestURI, "/api") {
 			index, err := distFS.Open("index.html")
@@ -34,4 +34,5 @@ func ServeReact(app *gin.Engine, frontendFS embed.FS) {
 			http.ServeContent(c.Writer, c.Request, "index.html", stat.ModTime(), index)
 		}
 	})
+	return nil
 }

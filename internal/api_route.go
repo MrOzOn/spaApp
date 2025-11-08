@@ -2,8 +2,6 @@ package internal
 
 import (
 	"spaApp/internal/handlers"
-
-	"github.com/gin-gonic/gin"
 )
 
 // @title User API
@@ -19,8 +17,8 @@ import (
 
 // @host localhost:8080
 // @BasePath /api
-func ApiRoutes(r *gin.Engine) {
-	api := r.Group("/api")
+func (app *App) ApiRoutes() {
+	api := app.r.Group("/api")
 	{
 		api.GET("/time", handlers.GetCurrentTime)
 	}
