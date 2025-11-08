@@ -1,7 +1,7 @@
-package main
+package internal
 
 import (
-	"spaApp/handlers"
+	"spaApp/internal/handlers"
 
 	"github.com/gin-gonic/gin"
 )

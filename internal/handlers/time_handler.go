@@ -3,7 +3,7 @@ package handlers
 import (
 	"log"
 	"net/http"
-	"spaApp/common"
+	"spaApp/internal/common"
 	"time"
 
 	"github.com/gin-gonic/gin"

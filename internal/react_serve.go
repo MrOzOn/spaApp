@@ -1,4 +1,4 @@
-package main
+package internal
 
 import (
 	"embed"
@@ -10,10 +10,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-//go:embed frontend/dist
-var frontendFS embed.FS
-
-func getFileSystem(path string) static.ServeFileSystem {
+func getFileSystem(path string, frontendFS embed.FS) static.ServeFileSystem {
 	fs, err := static.EmbedFolder(frontendFS, path)
 	if err != nil {
 		log.Fatal(err)
@@ -21,8 +18,8 @@ func getFileSystem(path string) static.ServeFileSystem {
 	return fs
 }
 
-func ServeReact(app *gin.Engine) {
-	distFS := getFileSystem("frontend/dist")
+func ServeReact(app *gin.Engine, frontendFS embed.FS) {
+	distFS := getFileSystem("frontend/dist", frontendFS)
 	app.Use(static.Serve("/", distFS))
 
 	app.NoRoute(func(c *gin.Context) {
