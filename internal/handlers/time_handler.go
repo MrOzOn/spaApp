@@ -20,7 +20,7 @@ type GetCurrentTimeResponseWrapper struct {
 // @Produce json
 // @Success 200 {object} common.APIResponse "dfhdslfj"
 // @Response 200 {object} GetCurrentTimeResponseWrapper "dddd"
-// @Router /api/time [get]
+// @Router /time [get]
 func GetCurrentTime(c *gin.Context) {
 	currentTime := time.Now()
 	log.Printf("current time is %s", currentTime)

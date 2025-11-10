@@ -3,7 +3,9 @@ package internal
 import (
 	"embed"
 	"log"
+	"spaApp/docs"
 	_ "spaApp/docs"
+	"spaApp/internal/handlers"
 	"time"
 
 	"github.com/gin-contrib/cors"
@@ -18,6 +20,14 @@ type App struct {
 
 func NewApp(frontendFS embed.FS) (*App, error) {
 	a := &App{}
+
+	docs.SwaggerInfo.Title = "Swagger Example API"
+	docs.SwaggerInfo.Description = "This is a simple SPA server"
+	docs.SwaggerInfo.Version = "1.0"
+	//docs.SwaggerInfo.Host = "petstore.swagger.io"
+	//docs.SwaggerInfo.BasePath = "/api"
+	docs.SwaggerInfo.Schemes = []string{"http", "https"}
+
 	a.r = gin.Default()
 	// ===== CORS =====
 	a.r.Use(cors.New(cors.Config{
@@ -34,8 +44,11 @@ func NewApp(frontendFS embed.FS) (*App, error) {
 		return nil, err
 	}
 	// ===== API =====
-	a.ApiRoutes()
-	// SWAGGER DOCS ROUTE
+	api := a.r.Group("/api")
+	{
+		api.GET("/time", handlers.GetCurrentTime)
+	}
+	// ===== SWAGGER =====
 	a.r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 	return a, nil
